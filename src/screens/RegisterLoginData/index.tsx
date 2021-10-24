@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { RFValue } from 'react-native-responsive-fontsize';
 import * as Yup from 'yup';
@@ -30,6 +30,7 @@ const schema = Yup.object().shape({
 })
 
 export function RegisterLoginData() {
+
   const { navigate } = useNavigation();
   const {
     control,
@@ -48,8 +49,16 @@ export function RegisterLoginData() {
     }
 
     const dataKey = '@savepass:logins';
+    const storageData = await AsyncStorage.getItem(dataKey);
+    const currentData = storageData ? JSON.parse(storageData) : [];
 
-    // Save data on AsyncStorage and navigate to 'Home' screen
+    const newData = [
+      newLoginData,
+      ...currentData
+    ];
+    
+    await AsyncStorage.setItem(dataKey, JSON.stringify(newData));
+    navigate('Home'); 
   }
 
   return (
@@ -66,8 +75,7 @@ export function RegisterLoginData() {
             title="Nome do serviço"
             name="service_name"
             error={
-              // Replace here with real content
-              'Has error ? show error message'
+              errors.service_name && errors.service_name.message
             }
             control={control}
             autoCapitalize="sentences"
@@ -78,8 +86,7 @@ export function RegisterLoginData() {
             title="E-mail"
             name="email"
             error={
-              // Replace here with real content
-              'Has error ? show error message'
+              errors.email && errors.email.message
             }
             control={control}
             autoCorrect={false}
@@ -91,8 +98,7 @@ export function RegisterLoginData() {
             title="Senha"
             name="password"
             error={
-              // Replace here with real content
-              'Has error ? show error message'
+              errors.password && errors.password.message
             }
             control={control}
             secureTextEntry

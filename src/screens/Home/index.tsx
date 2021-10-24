@@ -1,6 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
 
 import { Header } from '../../components/Header';
 import { SearchBar } from '../../components/SearchBar';
@@ -30,15 +33,34 @@ export function Home() {
 
   async function loadData() {
     const dataKey = '@savepass:logins';
-    // Get asyncStorage data, use setSearchListData and setData
+
+    const response = await AsyncStorage.getItem(dataKey);
+
+    const storageData = response ? JSON.parse(response) : []
+    setData(storageData)
+    setSearchListData(storageData);
+    console.log(data)
   }
 
   function handleFilterLoginData() {
-    // Filter results inside data, save with setSearchListData
+    const trimText = searchText.trim();
+    setSearchText(trimText);
+
+    if (trimText.length > 1) {
+      const regExp = new RegExp(searchText, 'gi');
+      setSearchListData(data.filter((item) => item.service_name.match(regExp)));
+
+    }
+    else if (searchText.length == 0) {
+      setSearchListData(data);
+    }
+    else {
+      alert('Insira pelo menos 2 caracteres validos!');
+    }
   }
 
   function handleChangeInputText(text: string) {
-    // Update searchText value
+    setSearchText(text)
   }
 
   useFocusEffect(useCallback(() => {
@@ -60,7 +82,6 @@ export function Home() {
           value={searchText}
           returnKeyType="search"
           onSubmitEditing={handleFilterLoginData}
-
           onSearchButtonPress={handleFilterLoginData}
         />
 
